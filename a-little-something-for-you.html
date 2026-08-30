@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>A Little Something For You</title>
+<meta name="theme-color" content="#f7dfe4">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     ============================================================ */
+  :root{
+    --bg-1: #fbe7ea;
+    --bg-2: #f4d6de;
+    --bg-3: #eecfe0;
+    --plum: #3a1420;
+    --plum-soft: #6e3a49;
+    --rose: #e58fa2;
+    --rose-deep: #c96d84;
+    --rose-pale: #f6c9d4;
+    --gold: #cf9b5c;
+    --gold-pale: #e8caa0;
+    --cream: #fffaf5;
+    --leaf: #7c9463;
+
+    --font-display: 'Cormorant Garamond', 'Times New Roman', serif;
+    --font-body: 'Quicksand', -apple-system, sans-serif;
+
+    --shadow-soft: 0 20px 45px -20px rgba(58,20,32,0.35);
+    --shadow-card: 0 30px 60px -25px rgba(58,20,32,0.4), 0 2px 8px rgba(58,20,32,0.06);
+    --ease: cubic-bezier(.22,.85,.4,1);
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0;
+    font-family:var(--font-body);
+    color:var(--plum);
+    background:
+      radial-gradient(120% 90% at 15% 0%, var(--bg-3), transparent 60%),
+      radial-gradient(120% 90% at 85% 100%, var(--bg-2), transparent 60%),
+      var(--bg-1);
+    overflow-x:hidden;
+    -webkit-tap-highlight-color:transparent;
+    min-height:100dvh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  button{ font-family:inherit; }
+
+  /* ============================================================
+     AMBIENT BACKGROUND PARTICLES
+     ============================================================ */
+  #bg-ambient{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:0;
+  }
+  .floaty{
+    position:absolute;
+    bottom:-10%;
+    font-size: 1rem;
+    line-height:1;
+    animation-name: floatUp;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+    will-change: transform, opacity;
+    user-select:none;
+  }
+  .floaty-heart{ color: var(--rose-deep); opacity:.55; filter: drop-shadow(0 0 4px rgba(201,109,132,.25)); }
+  .floaty-sparkle{ color: var(--gold); opacity:.6; }
+
+  @keyframes floatUp{
+    0%   { transform: translateY(0) translateX(0) rotate(0deg) scale(.8); opacity:0; }
+    12%  { opacity:1; }
+    100% { transform: translateY(-115vh) translateX(var(--drift,20px)) rotate(180deg) scale(1); opacity:0; }
+  }
+
+  /* ============================================================
+     STAGE / CARD FRAME
+     ============================================================ */
+  #stage-frame{
+    position:relative;
+    z-index:1;
+    width:min(430px, 100vw);
+    height:min(860px, 100dvh);
+    background: linear-gradient(180deg, rgba(255,250,245,.75), rgba(255,250,245,.55));
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border-radius: 32px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid rgba(255,255,255,.6);
+    overflow:hidden;
+  }
+
+  @media (max-width: 480px){
+    #stage-frame{
+      width:100vw;
+      height:100dvh;
+      border-radius:0;
+      border:none;
+      box-shadow:none;
+    }
+  }
+
+  #stage{
+    position:relative;
+    width:100%;
+    height:100%;
+  }
+
+  .screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding: 8% 8%;
+    opacity:0;
+    transform: translateY(14px) scale(.985);
+    pointer-events:none;
+    transition: opacity .55s var(--ease), transform .55s var(--ease);
+  }
+  .screen.active{
+    opacity:1;
+    transform: translateY(0) scale(1);
+    pointer-events:auto;
+  }
+
+  /* ============================================================
+     SHARED TEXT STYLES
+     ============================================================ */
+  .eyebrow{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(.9rem, 3vw, 1.05rem);
+    letter-spacing: .04em;
+    color: var(--rose-deep);
+    margin: 0 0 .6rem;
+  }
+  .title{
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size: clamp(2.4rem, 10vw, 3.4rem);
+    line-height:1.05;
+    margin: 0 0 .7rem;
+    color: var(--plum);
+  }
+  .subtitle{
+    font-size: clamp(.95rem, 3.4vw, 1.05rem);
+    color: var(--plum-soft);
+    margin: 0 0 .35rem;
+    max-width: 26ch;
+  }
+  .question{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.1rem, 4vw, 1.3rem);
+    color: var(--plum);
+    margin: 1.4rem 0 1.6rem;
+  }
+  .scene-instruction{
+    font-size: .92rem;
+    color: var(--plum-soft);
+    margin: 1.4rem 0 0;
+    letter-spacing:.01em;
+  }
+  .progress-text{
+    font-size: .85rem;
+    color: var(--rose-deep);
+    font-weight:600;
+    letter-spacing:.02em;
+    margin-top:.5rem;
+    min-height:1.2em;
+  }
+
+  /* ============================================================
+     BUTTON
+     ============================================================ */
+  .cta-btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    touch-action: manipulation;
+    padding: 1rem 2.1rem;
+    font-family: var(--font-body);
+    font-weight:600;
+    font-size: 1rem;
+    color: var(--cream);
+    background: linear-gradient(135deg, var(--rose), var(--rose-deep));
+    border-radius: 999px;
+    box-shadow: var(--shadow-soft);
+    transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .cta-btn:active{
+    transform: scale(.95);
+    box-shadow: 0 10px 25px -15px rgba(58,20,32,.5);
+  }
+  .cta-btn.ghost{
+    background: transparent;
+    color: var(--rose-deep);
+    border: 1.5px solid var(--rose-deep);
+    box-shadow:none;
+  }
+
+  /* ============================================================
+     LANDING SCREEN
+     ============================================================ */
+  #screen-landing .heart-mark{
+    font-size: 1.4rem;
+    color: var(--rose-deep);
+    margin-bottom: .3rem;
+    animation: pulseHeart 2.6s ease-in-out infinite;
+  }
+  @keyframes pulseHeart{
+    0%,100%{ transform:scale(1); }
+    50%{ transform:scale(1.12); }
+  }
+
+  /* ============================================================
+     FLOWER SCENE
+     ============================================================ */
+  .vase-scene{
+    position:relative;
+    width:min(300px, 78vw);
+    height:min(340px, 42vh);
+    margin: 0 auto;
+  }
+  .vase-graphic{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    width:100%;
+    height:62%;
+    filter: drop-shadow(0 18px 20px rgba(58,20,32,.18));
+  }
+  .flower{
+    position:absolute;
+    top:0;
+    width:30%;
+    max-width:100px;
+    aspect-ratio: 3/4;
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    touch-action: manipulation;
+  }
+  .flower[data-index="0"]{ left:10%; }
+  .flower[data-index="1"]{ left:50%; transform:translateX(-50%); }
+  .flower[data-index="2"]{ left:90%; transform:translateX(-100%); }
+
+  .flower-svg{ width:100%; height:100%; overflow:visible; }
+  .flower .bud{ transform-origin:45px 55px; transition: transform .5s var(--ease), opacity .4s var(--ease); }
+  .flower .bloom{
+    opacity:0;
+    transform: scale(.45);
+    transform-origin: 45px 55px;
+    transition: transform .6s var(--ease), opacity .5s var(--ease);
+  }
+  .flower.bloomed .bud{ opacity:0; transform: scale(.2) translateY(6px); }
+  .flower.bloomed .bloom{
+    opacity:1;
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(229,143,162,.55));
+  }
+  .flower:not(.bloomed):active .bud{ transform: scale(1.06); }
+
+  /* falling petal particles (spawned via JS, position:fixed) */
+  .petal-bit{
+    position:fixed;
+    width:10px; height:14px;
+    background: var(--rose);
+    border-radius: 100% 0 100% 0;
+    pointer-events:none;
+    z-index:50;
+    animation: petalFall 1.1s ease-in forwards;
+  }
+  @keyframes petalFall{
+    0%{ transform: translate(0,0) rotate(0deg); opacity:1; }
+    100%{ transform: translate(var(--dx,0px), 90px) rotate(var(--rot,180deg)); opacity:0; }
+  }
+
+  /* ============================================================
+     ENVELOPE SCENE
+     ============================================================ */
+  .envelope-wrap{
+    perspective: 900px;
+    margin: 1rem auto 0;
+  }
+  .envelope{
+    position:relative;
+    width: min(250px, 68vw);
+    height: 165px;
+    cursor:pointer;
+    touch-action: manipulation;
+  }
+  .envelope-body{
+    position:absolute;
+    inset:0;
+    background: linear-gradient(160deg, var(--cream), var(--rose-pale));
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+  }
+  .envelope-pocket{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height: 62%;
+    background: linear-gradient(180deg, var(--rose-pale), var(--rose));
+    clip-path: polygon(0 0, 50% 42%, 100% 0, 100% 100%, 0 100%);
+    border-radius: 0 0 10px 10px;
+    z-index:3;
+  }
+  .envelope-letter{
+    position:absolute;
+    left:8%;
+    right:8%;
+    top:14%;
+    height:78%;
+    background: var(--cream);
+    border-radius: 6px;
+    box-shadow: 0 4px 14px rgba(58,20,32,.15);
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 10px;
+    transition: transform .8s var(--ease);
+    transform: translateY(0);
+  }
+  .envelope-letter .mini-heart{
+    font-family: var(--font-display);
+    font-style:italic;
+    color: var(--rose-deep);
+    font-size: .95rem;
+  }
+  .envelope-flap{
+    position:absolute;
+    top:0; left:0; right:0;
+    height:56%;
+    background: linear-gradient(200deg, var(--rose), var(--rose-deep));
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top center;
+    transform-style: preserve-3d;
+    transition: transform .7s var(--ease);
+    z-index:4;
+    border-radius: 10px 10px 0 0;
+  }
+  .envelope-seal{
+    position:absolute;
+    top: 38%;
+    left:50%;
+    transform: translate(-50%,-50%);
+    width:34px; height:34px;
+    border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, var(--gold-pale), var(--gold));
+    box-shadow: 0 3px 8px rgba(58,20,32,.3);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--cream);
+    font-size:.85rem;
+    z-index:5;
+    transition: opacity .3s ease, transform .3s ease;
+  }
+
+  .envelope.open .envelope-flap{
+    transform: rotateX(180deg);
+    z-index:1;
+  }
+  .envelope.open .envelope-seal{
+    opacity:0;
+    transform: translate(-50%,-50%) scale(.4);
+  }
+  .envelope.open .envelope-letter{
+    transform: translateY(-46px);
+  }
+
+  /* ============================================================
+     FINAL LETTER
+     ============================================================ */
+  .letter-card{
+    background: linear-gradient(180deg, var(--cream), #fff);
+    border-radius: 22px;
+    padding: 2rem 1.6rem;
+    box-shadow: var(--shadow-card);
+    max-width: 340px;
+    width:100%;
+    position:relative;
+  }
+  .letter-card::before{
+    content:"❧";
+    display:block;
+    font-size:1.3rem;
+    color: var(--gold);
+    margin-bottom:.4rem;
+  }
+  #letter-heading{
+    font-family: var(--font-display);
+    font-weight:600;
+    font-size: clamp(1.5rem, 6vw, 1.9rem);
+    color: var(--plum);
+    margin: 0 0 .3rem;
+    line-height:1.15;
+  }
+  #letter-date{
+    font-size:.8rem;
+    color: var(--rose-deep);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin: 0 0 1.1rem;
+  }
+  #letter-message{
+    font-size: .98rem;
+    line-height:1.65;
+    color: var(--plum-soft);
+    text-align:left;
+    margin: 0 0 1.3rem;
+  }
+  #letter-message p{ margin:0 0 .8rem; }
+  #letter-signature{
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--plum);
+    text-align:right;
+    margin: 0 0 1.5rem;
+  }
+
+  /* ============================================================
+     ACCESSIBILITY / MOTION
+     ============================================================ */
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+  }
+
+  button:focus-visible, .flower:focus-visible, .envelope:focus-visible{
+    outline: 2px solid var(--rose-deep);
+    outline-offset: 3px;
+  }
+</style>
+</head>
+<body>
+
+<div id="bg-ambient" aria-hidden="true"></div>
+
+<div id="stage-frame">
+  <main id="stage">
+
+    <!-- ===================== 1. LANDING ===================== -->
+    <section class="screen active" id="screen-landing">
+      <div class="heart-mark">♡</div>
+      <p class="eyebrow">for you, always.</p>
+      <h1 class="title">Hey Baby!</h1>
+      <p class="subtitle">There's something waiting for you today.</p>
+      <p class="question">Do you want to see it?</p>
+      <button class="cta-btn" id="btn-start">Yes, show me 💗</button>
+    </section>
+
+    <!-- ===================== 2. FLOWERS ===================== -->
+    <section class="screen" id="screen-flowers">
+      <p class="eyebrow">just a little further</p>
+      <div class="vase-scene" id="vase-scene"><!-- injected by JS --></div>
+      <p class="scene-instruction">Tap the flowers gently 🌹</p>
+      <p class="progress-text" id="flower-progress"></p>
+    </section>
+
+    <!-- ===================== 3. ENVELOPE ===================== -->
+    <section class="screen" id="screen-envelope">
+      <p class="eyebrow">almost there</p>
+      <p class="subtitle" style="max-width:24ch;">There's one more thing for you 💌</p>
+      <div class="envelope-wrap">
+        <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Tap to open the envelope">
+          <div class="envelope-body"></div>
+          <div class="envelope-letter"><span class="mini-heart">♡</span></div>
+          <div class="envelope-pocket"></div>
+          <div class="envelope-flap"></div>
+          <div class="envelope-seal">❤</div>
+        </div>
+      </div>
+      <p class="scene-instruction">Tap the envelope.</p>
+    </section>
+
+    <!-- ===================== 4. FINAL LETTER ===================== -->
+    <section class="screen" id="screen-letter">
+      <div class="letter-card">
+        <h2 id="letter-heading"></h2>
+        <p id="letter-date"></p>
+        <div id="letter-message"></div>
+        <p id="letter-signature"></p>
+        <button class="cta-btn ghost" id="btn-replay">Read it again 💗</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     🌷 CUSTOMIZE YOUR SURPRISE HERE 🌷
+     ============================================================ */
+  const CONFIG = {
+    recipientName: "Rayang",
+    monthsaryDate: "August 30",
+    message:
+      "Thank you for being part of my life and for making ordinary days feel special. " +
+      "Every moment with you means more than I can put into words.\n\n" +
+      "I hope we continue creating beautiful memories together. Happy Monthsary, my love.",
+    signature: "— Your Fiancé",
+    buttonTexts: {
+      start: "Yes, show me 💗",
+      replay: "Read it again 💗"
+    }
+  };
+
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- populate dynamic text from CONFIG ---------- */
+  document.getElementById("btn-start").textContent = CONFIG.buttonTexts.start;
+  document.getElementById("btn-replay").textContent = CONFIG.buttonTexts.replay;
+  document.getElementById("letter-heading").textContent = `Happy Monthsary, ${CONFIG.recipientName}! ❤️`;
+  document.getElementById("letter-date").textContent = CONFIG.monthsaryDate;
+  document.getElementById("letter-signature").textContent = CONFIG.signature;
+  document.getElementById("letter-message").innerHTML = CONFIG.message
+    .split(/\n{2,}/)
+    .map(p => `<p>${p.trim()}</p>`)
+    .join("");
+
+  /* ============================================================
+     SCREEN NAVIGATION
+     ============================================================ */
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+  }
+
+  document.getElementById("btn-start").addEventListener("click", () => {
+    showScreen("screen-flowers");
+  });
+
+  document.getElementById("btn-replay").addEventListener("click", resetExperience);
+
+  /* ============================================================
+     AMBIENT FLOATING HEARTS / SPARKLES
+     ============================================================ */
+  const bgAmbient = document.getElementById("bg-ambient");
+  const AMBIENT_CAP = reduceMotion ? 0 : 16;
+
+  function spawnAmbient(){
+    if (bgAmbient.children.length >= AMBIENT_CAP) return;
+    const el = document.createElement("div");
+    const isHeart = Math.random() > 0.45;
+    el.className = "floaty " + (isHeart ? "floaty-heart" : "floaty-sparkle");
+    el.textContent = isHeart ? "♥" : "✦";
+    el.style.left = Math.random() * 100 + "%";
+    el.style.fontSize = (0.7 + Math.random() * 0.9).toFixed(2) + "rem";
+    el.style.animationDuration = (7 + Math.random() * 6).toFixed(2) + "s";
+    el.style.setProperty("--drift", (Math.random() * 80 - 40).toFixed(0) + "px");
+    el.addEventListener("animationend", () => el.remove());
+    bgAmbient.appendChild(el);
+  }
+
+  if (!reduceMotion){
+    for (let i = 0; i < 6; i++) setTimeout(spawnAmbient, i * 300);
+    setInterval(spawnAmbient, 900);
+  }
+
+  /* ============================================================
+     FLOWER SCENE — build vase + 3 flowers
+     ============================================================ */
+  const vaseGraphicSVG = `
+    <svg viewBox="0 0 320 210" width="100%" height="100%" preserveAspectRatio="xMidYMax meet">
+      <defs>
+        <linearGradient id="vaseGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#fff6ee"/>
+          <stop offset="100%" stop-color="#e9caa0"/>
+        </linearGradient>
+      </defs>
+      <path d="M38,0 C50,42 92,54 132,68" fill="none" stroke="#7c9463" stroke-width="4" stroke-linecap="round"/>
+      <path d="M160,0 L160,68" fill="none" stroke="#7c9463" stroke-width="4" stroke-linecap="round"/>
+      <path d="M282,0 C270,42 228,54 188,68" fill="none" stroke="#7c9463" stroke-width="4" stroke-linecap="round"/>
+      <ellipse cx="90" cy="40" rx="12" ry="6" fill="#8fab6d" transform="rotate(-30 90 40)"/>
+      <ellipse cx="230" cy="40" rx="12" ry="6" fill="#8fab6d" transform="rotate(30 230 40)"/>
+      <ellipse cx="160" cy="45" rx="10" ry="6" fill="#8fab6d" transform="rotate(0 160 45)"/>
+      <ellipse cx="160" cy="68" rx="46" ry="9" fill="#d8a76e"/>
+      <path d="M115,68 C99,92 94,132 105,172 C111,196 132,209 160,209 C188,209 209,196 215,172 C226,132 221,92 205,68 Z" fill="url(#vaseGrad)" stroke="#e0bd8c" stroke-width="1.5"/>
+      <path d="M118,72 C106,96 102,130 111,164" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity=".45"/>
+    </svg>
+  `;
+
+  function petalPaths(colorA, colorB){
+    let out = "";
+    for (let i = 0; i < 8; i++){
+      const rot = i * 45;
+      const fill = i % 2 === 0 ? colorA : colorB;
+      out += `<path d="M45,55 C37,44 37,28 45,17 C53,28 53,44 45,55 Z" fill="${fill}" opacity="0.95" transform="rotate(${rot} 45 55)"/>`;
+    }
+    return out;
+  }
+
+  function flowerMarkup(index){
+    return `
+      <button class="flower" data-index="${index}" aria-label="Tap to bloom flower ${index + 1}">
+        <svg class="flower-svg" viewBox="0 0 90 120">
+          <defs>
+            <linearGradient id="budGrad${index}" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--rose)"/>
+              <stop offset="100%" stop-color="var(--rose-deep)"/>
+            </linearGradient>
+          </defs>
+          <g class="bud">
+            <path d="M45,32 C38,42 38,50 45,58 C52,50 52,42 45,32 Z" fill="#8fab6d" opacity=".6"/>
+            <ellipse cx="45" cy="52" rx="12" ry="19" fill="url(#budGrad${index})"/>
+          </g>
+          <g class="bloom">
+            ${petalPaths("var(--rose)", "var(--rose-deep)")}
+            <circle cx="45" cy="55" r="6" fill="var(--gold)"/>
+          </g>
+        </svg>
+      </button>
+    `;
+  }
+
+  const vaseScene = document.getElementById("vase-scene");
+  vaseScene.innerHTML =
+    `<div class="vase-graphic">${vaseGraphicSVG}</div>` +
+    [0,1,2].map(flowerMarkup).join("");
+
+  let bloomedCount = 0;
+  const flowerProgress = document.getElementById("flower-progress");
+
+  function progressMessage(count){
+    if (count === 0) return "";
+    if (count === 3) return "all bloomed 🌸";
+    const remaining = 3 - count;
+    return remaining === 1 ? "1 more flower…" : `${remaining} more flowers…`;
+  }
+
+  function spawnPetalBurst(fromEl){
+    if (reduceMotion) return;
+    const rect = fromEl.getBoundingClientRect();
+    const originX = rect.left + rect.width / 2;
+    const originY = rect.top + rect.height / 2;
+    const count = 6;
+    for (let i = 0; i < count; i++){
+      const bit = document.createElement("div");
+      bit.className = "petal-bit";
+      bit.style.left = originX + (Math.random() * 20 - 10) + "px";
+      bit.style.top = originY + (Math.random() * 10 - 5) + "px";
+      bit.style.setProperty("--dx", (Math.random() * 100 - 50).toFixed(0) + "px");
+      bit.style.setProperty("--rot", (Math.random() * 240 - 120).toFixed(0) + "deg");
+      bit.style.background = i % 2 === 0 ? "var(--rose)" : "var(--rose-deep)";
+      bit.addEventListener("animationend", () => bit.remove());
+      document.body.appendChild(bit);
+    }
+  }
+
+  document.querySelectorAll(".flower").forEach(flowerBtn => {
+    flowerBtn.addEventListener("click", () => {
+      if (flowerBtn.classList.contains("bloomed")) return;
+      flowerBtn.classList.add("bloomed");
+      bloomedCount++;
+      spawnPetalBurst(flowerBtn);
+      flowerProgress.textContent = progressMessage(bloomedCount);
+
+      if (bloomedCount === 3){
+        setTimeout(() => showScreen("screen-envelope"), 1000);
+      }
+    });
+  });
+
+  /* ============================================================
+     ENVELOPE SCENE
+     ============================================================ */
+  const envelope = document.getElementById("envelope");
+
+  function openEnvelope(){
+    if (envelope.classList.contains("open")) return;
+    envelope.classList.add("open");
+    setTimeout(() => showScreen("screen-letter"), 900);
+  }
+
+  envelope.addEventListener("click", openEnvelope);
+  envelope.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      openEnvelope();
+    }
+  });
+
+  /* ============================================================
+     RESET / REPLAY
+     ============================================================ */
+  function resetExperience(){
+    bloomedCount = 0;
+    flowerProgress.textContent = "";
+    document.querySelectorAll(".flower").forEach(f => f.classList.remove("bloomed"));
+    envelope.classList.remove("open");
+    showScreen("screen-landing");
+  }
+
+})();
+</script>
+</body>
+</html>
